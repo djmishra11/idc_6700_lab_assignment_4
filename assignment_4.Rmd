@@ -1,0 +1,420 @@
+---
+title: "Lab 4 Assignment"
+author: "Dhananjay"
+date: "2023-03-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+## Q1. Compare Bar and Pie Plots
+Consider the dataset below.  Please construct two plots to visualize this data: a sorted bar plot and a pie chart.  Make sure both plots have easy to read labels and grid lines for reference.
+http://eecs.ucf.edu/~wiegand/idc6700/datasets/doctorwho.csv
+
+```{r}
+
+# Loading the required libraries
+library(tidyverse)
+library(ggplot2)
+
+# Loading the doctorwho dataset
+doctorWhodf <- read.csv("doctorwho.csv", header = TRUE, sep = ",")
+
+# Computing the frequency of each doctor
+doctorFrequency <- table(doctorWhodf$FavoriteDoctor)
+
+# Sorting the frequency in descending order
+sortedDoctorFrequency <- sort(doctorFrequency, decreasing = TRUE)
+
+# Creating a vector of colors for each doctor
+doctorColors <- c("blue", "red", "black", "purple")
+
+# creating a sorted bar plot with different colors and grid lines
+doctor_bp <- barplot(sortedDoctorFrequency, 
+              main = "Patient's Visiting Frequency per Doctors", 
+              xlab = "Doctors",
+              ylab = "Frequency", 
+              col = doctorColors, 
+              border = "white", 
+              ylim = c(0, 25),
+              las = 1, 
+              cex.names = 1, 
+              horiz = FALSE, 
+              yaxs = "i")
+
+# Adding a horizontal grid line at the x-axis
+abline(h = 0, v = NULL, col = "black", lty = "solid")
+
+# Adding horizontal grid lines at each y-interval
+abline(h = seq(0, 20, by = 5), v = NULL, lty = "dotted", col = "gray")
+
+# Adding frequency values on top of each bar
+text(doctor_bp, sortedDoctorFrequency, labels = sortedDoctorFrequency, pos = 3, cex = 0.7)
+
+
+```
+
+
+```{r}
+
+# Loading the required libraries
+library(tidyverse)
+library(ggplot2)
+
+# Loading the doctorwho dataset
+doctorWhodf <- read.csv("doctorwho.csv", header = TRUE, sep = ",")
+
+# Computing the frequency of each doctor
+doctorFrequency <- table(doctorWhodf$FavoriteDoctor)
+
+# Sorting the frequency in descending order
+# sortedDoctorFrequency <- sort(doctorFrequency, decreasing = TRUE)
+
+# Creating a vector of colors for each doctor
+doctorColors <- c("blue", "red", "black", "orange")
+
+# Creating the pie chart for the data
+pie(doctorFrequency, 
+    labels = names(doctorFrequency), 
+    col = doctorColors, 
+    main = "Patient's Visiting Frequency per Doctors",
+    cex = 0.8, 
+    font.main = 1, 
+    font.lab = 1, 
+    font.axis = 1)
+
+# Adding the grid lines
+# grid(lty = 3, lwd = 0.5, col = "gray")
+
+# Adding the legend to the pie chart
+legend("right", cex = 0.8, legend = names(doctorFrequency), fill = doctorColors)
+
+
+```
+
+
+
+## Q2. A Simple Time Series
+The standard R base comes with a multivariate time series data set for major European stock indices from 1991 to 1998 in "ts" format (EuStockMarkets).  Display a paneled plot of the four indices represented (hint:  Don't use ggplot2--consider R's built-in plotting functions).
+
+```{r}
+
+# Loading the EuStockMarkets dataset
+data(EuStockMarkets)
+
+# Creating a 2x2 plot panel for the four indices
+par(mfrow = c(2, 2))
+
+# Creating a plot for each of the four indices with different colors and axis limits
+plot(EuStockMarkets[, "DAX"], type = "l", main = "Germany (DAX)", col = "#999999", ylab = "Index Value", xlab = "Year", ylim = c(0, ceiling(max(EuStockMarkets[, "DAX"]))))
+plot(EuStockMarkets[, "SMI"], type = "l", main = "Switzerland (SMI)", col = "#E69F00", ylab = "Index Value", xlab = "Year", ylim = c(0, ceiling(max(EuStockMarkets[, "SMI"]))))
+plot(EuStockMarkets[, "CAC"], type = "l", main = "France (CAC)", col = "#56B4E9", ylab = "Index Value", xlab = "Year", ylim = c(0, ceiling(max(EuStockMarkets[, "CAC"]))))
+plot(EuStockMarkets[, "FTSE"], type = "l", main = "UK (FTSE)", col = "#D55E00", ylab = "Index Value", xlab = "Year", ylim = c(0, ceiling(max(EuStockMarkets[, "FTSE"]))))
+
+
+```
+
+
+## Q3. Third item
+A certain measurement tool collects statistics about server performance once a day and reports the instantaneous measure at that moment.  The following data set represents the measured number of requests per second for each day in 2014: (http://cs.ucf.edu/~wiegand/ids6938/datasets/RequestData.csv)
+Plot a scatter-plot of the continuous time series data.  Fit a smoothed curve to the data over the year, as well. 
+Hint:  You can convert the data string to a date type (which will help with plotting the x-axis) as follows:
+```R
+... aes(x=strptime(Day,"%m-%d-%Y") ...
+```
+
+```{r}
+# Loading the required libraries
+library(tidyverse)
+library(ggplot2)
+
+# Loading the RequestData dataset
+requestDatadf <- read.csv("RequestData.csv", header = TRUE, sep = ",")
+# head(requestDatadf)
+
+# Converting the "Day" column to POSIXct object
+requestDatadf$Day <- as.POSIXct(requestDatadf$Day, format="%m-%d-%Y")
+
+# Creating the scatter-plot of the continuous time-series data
+ggplot(requestDatadf, aes(x=Day, y=RequestsPerSecond)) + 
+  geom_point(size = 1.5, alpha = 0.6, color = "blue") +
+  labs(title = "Number of Requests per Second per Day in 2014",
+       x = "Date", 
+       y = "Requests per Second") +
+  theme_minimal() +
+  theme(panel.grid.major.x = element_blank())
+
+# Creating the scatter-plot of the continuous time-series data and fitting a smoothed curve
+ggplot(requestDatadf, aes(x=Day, y=RequestsPerSecond)) + 
+  geom_point(color = "blue") +
+  geom_smooth(method = "loess", se = TRUE, color = "red") +
+  labs(title = "Number of Requests per Second per Day in 2014 with Curve Fitting",
+       x = "Date", 
+       y = "Requests per Second") +
+  theme_minimal() +
+  theme(panel.grid.major.x = element_blank())
+
+
+```
+
+
+
+## Q4. UCF Building Energy Usage Time Series
+Data for 5 UCF building structures are in the data folder of this repository.
+
+* Read in the datasets into R, and list what data is being captured for each building.
+
+
+```{r}
+
+# Loading the libraries
+library(tidyverse)
+
+# Loading the 5 UCF Building Structures datasets
+
+# Reading the UCF Biological Sciences building dataset 
+biologicalSciencesdf <- read.csv("2021-UCF Biological Sciences.csv", header = TRUE, sep = ";")
+
+# Listing the data that is being captured for the Biological Sciences building
+str(biologicalSciencesdf)
+head(biologicalSciencesdf)
+#print(biologicalSciencesdf)
+summary(biologicalSciencesdf)
+
+# Reading the UCF CFE Federal Credit Union Arena building dataset 
+cfeCreditUnionArenadf <- read.csv("2021-UCF CFE Federal Credit Union Arena.csv", header = TRUE, sep = ";")
+
+# Listing the data that is being captured for the CFE Federal Credit Union Arena building
+str(cfeCreditUnionArenadf)
+head(cfeCreditUnionArenadf)
+#print(cfeCreditUnionArenadf)
+summary(cfeCreditUnionArenadf)
+
+# Reading the UCF Milican Hall building dataset 
+milicanHalldf <- read.csv("2021-UCF Milican Hall.csv", header = TRUE, sep = ";")
+
+# Listing the data that is being captured for the Milican Hall building
+str(milicanHalldf)
+head(milicanHalldf)
+#print(milicanHalldf)
+summary(milicanHalldf)
+
+# Reading the UCF Student Union building dataset 
+studentUniondf <- read.csv("2021-UCF Student Union.csv", header = TRUE, sep = ";")
+
+# Listing the data that is being captured for the Student Union building
+str(studentUniondf)
+head(studentUniondf)
+#print(studentUniondf)
+summary(studentUniondf)
+
+# Reading the UCF Trevor Colbourn Hall building dataset 
+trevorColbournHalldf <- read.csv("2021-UCF Trevor Colbourn Hall.csv", header = TRUE, sep = ";")
+
+# Listing the data that is being captured for the Trevor Colbourn Hall building
+str(trevorColbournHalldf)
+head(trevorColbournHalldf)
+#print(trevorColbournHalldf)
+summary(trevorColbournHalldf)
+
+
+```
+
+
+* Plot a grouped bar graph of the timeseries Electricity data for each building, with a 7-day sliding window line graph overlayed. Plot a stacked bar graph, with a 7-day sliding window, of all the energy usage of the buildings in one graph.
+
+
+
+```{r}
+# Loading the libraries
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(zoo)
+library(lubridate)
+
+# Loading the 5 UCF Building Structures datasets
+
+# Reading the UCF Biological Sciences building dataset 
+biologicalSciencesdf <- read.csv("2021-UCF Biological Sciences.csv", header = TRUE, sep = ";")
+
+
+# Reading the UCF CFE Federal Credit Union Arena building dataset 
+cfeCreditUnionArenadf <- read.csv("2021-UCF CFE Federal Credit Union Arena.csv", header = TRUE, sep = ";")
+
+# Reading the UCF Milican Hall building dataset 
+milicanHalldf <- read.csv("2021-UCF Milican Hall.csv", header = TRUE, sep = ";")
+
+# Reading the UCF Student Union building dataset 
+studentUniondf <- read.csv("2021-UCF Student Union.csv", header = TRUE, sep = ";")
+
+# Reading the UCF Trevor Colbourn Hall building dataset 
+trevorColbournHalldf <- read.csv("2021-UCF Trevor Colbourn Hall.csv", header = TRUE, sep = ";")
+
+
+
+```
+
+
+```{r}
+# Loading the libraries
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(zoo)
+library(lubridate)
+
+# Loading the 5 UCF Building Structures datasets
+
+# Reading the UCF Biological Sciences building dataset 
+biologicalSciencesdf <- read.csv("2021-UCF Biological Sciences.csv", header = TRUE, sep = ";")
+
+# Reading the UCF CFE Federal Credit Union Arena building dataset 
+cfeCreditUnionArenadf <- read.csv("2021-UCF CFE Federal Credit Union Arena.csv", header = TRUE, sep = ";")
+
+# Reading the UCF Milican Hall building dataset 
+milicanHalldf <- read.csv("2021-UCF Milican Hall.csv", header = TRUE, sep = ";")
+
+# Reading the UCF Student Union building dataset 
+studentUniondf <- read.csv("2021-UCF Student Union.csv", header = TRUE, sep = ";")
+
+# Reading the UCF Trevor Colbourn Hall building dataset 
+trevorColbournHalldf <- read.csv("2021-UCF Trevor Colbourn Hall.csv", header = TRUE, sep = ";")
+
+
+```
+
+
+
+* Do a decomposition of each data field for the five buildings (hint: stl), plot both weekly and monthly time periods.
+
+```{r}
+# Loading the libraries
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(zoo)
+library(lubridate)
+
+# Loading the 5 UCF Building Structures datasets
+
+# Reading the UCF Biological Sciences building dataset 
+biologicalSciencesdf <- read.csv("2021-UCF Biological Sciences.csv", header = TRUE, sep = ";")
+
+head(biologicalSciencesdf)
+
+# biologicalSciencesdf$Electric <- as.numeric(biologicalSciencesdf$Electric, na.rm = TRUE)
+
+# Performing decomposition of each data field for Biological Sciences building using stl
+# biologicalSciencesdfDecomposed <- stl(biologicalSciencesdf$Electric, s.window = "periodic")
+
+
+```
+
+
+
+```{r}
+
+
+```
+
+
+* Plot the buildings' electricity on a radar plot.
+
+
+```{r}
+# Loading the libraries
+library(tidyverse)
+library(ggplot2)
+library(dplyr)
+library(zoo)
+library(lubridate)
+library(fmsb)
+
+# Loading the 5 UCF Building Structures datasets
+
+# Reading the UCF Biological Sciences building dataset 
+biologicalSciencesdf <- read.csv("2021-UCF Biological Sciences.csv", header = TRUE, sep = ";")
+
+# Reading the UCF CFE Federal Credit Union Arena building dataset 
+cfeCreditUnionArenadf <- read.csv("2021-UCF CFE Federal Credit Union Arena.csv", header = TRUE, sep = ";")
+
+# Reading the UCF Milican Hall building dataset 
+milicanHalldf <- read.csv("2021-UCF Milican Hall.csv", header = TRUE, sep = ";")
+
+# Reading the UCF Student Union building dataset 
+studentUniondf <- read.csv("2021-UCF Student Union.csv", header = TRUE, sep = ";")
+
+# Reading the UCF Trevor Colbourn Hall building dataset 
+trevorColbournHalldf <- read.csv("2021-UCF Trevor Colbourn Hall.csv", header = TRUE, sep = ";")
+
+
+# Creating a data frame with the electricity data for each building
+datadf <- data.frame(
+  Biological_Sciences = as.numeric(biologicalSciencesdf$Electric),
+  CFE_Credit_Union_Arena = as.numeric(cfeCreditUnionArenadf$Electric),
+  Milican_Hall = as.numeric(milicanHalldf$Electric),
+  Student_Union = as.numeric(studentUniondf$Electric),
+  Trevor_Colbourn_Hall = as.numeric(trevorColbournHalldf$Electric)
+)
+
+
+# data <- as.data.frame(datadf)
+# dim(data)
+
+# Creating a vector of labels for the radar plot
+labels <- c("Biological Sciences", "CFE Credit Union Arena", "Milican Hall", "Student Union", "Trevor Colbourn Hall")
+
+
+
+
+```
+
+
+
+* Plot the buildings' electricity on 5 different heat maps, and 1 for the overall electric usage.
+
+
+```{r}
+# Load the ggplot2 package
+library(ggplot2)
+
+# Loading the 5 UCF Building Structures datasets
+
+# Reading the UCF Biological Sciences building dataset 
+biologicalSciencesdf <- read.csv("2021-UCF Biological Sciences.csv", header = TRUE, sep = ";")
+
+# Reading the UCF CFE Federal Credit Union Arena building dataset 
+cfeCreditUnionArenadf <- read.csv("2021-UCF CFE Federal Credit Union Arena.csv", header = TRUE, sep = ";")
+
+# Reading the UCF Milican Hall building dataset 
+milicanHalldf <- read.csv("2021-UCF Milican Hall.csv", header = TRUE, sep = ";")
+
+# Reading the UCF Student Union building dataset 
+studentUniondf <- read.csv("2021-UCF Student Union.csv", header = TRUE, sep = ";")
+
+# Reading the UCF Trevor Colbourn Hall building dataset 
+trevorColbournHalldf <- read.csv("2021-UCF Trevor Colbourn Hall.csv", header = TRUE, sep = ";")
+
+# Check the column names of each data frame
+names(biologicalSciencesdf)
+names(cfeCreditUnionArenadf)
+names(milicanHalldf)
+names(studentUniondf)
+names(trevorColbournHalldf)
+
+# Check the structure of each data frame
+str(biologicalSciencesdf)
+str(cfeCreditUnionArenadf)
+str(milicanHalldf)
+str(studentUniondf)
+str(trevorColbournHalldf)
+
+
+
+```
+
+
